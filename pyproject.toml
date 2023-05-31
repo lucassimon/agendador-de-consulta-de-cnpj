@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "agendador-de-consulta-de-cnpj"
+version = "0.1.0"
+description = ""
+authors = ["Lucas <lucassrod@gmail.com>"]
+readme = "README.md"
+packages = [{include = "agendador_de_consulta_de_cnpj"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "2.2.2"
+flask-restful = "^0.3.9"
+python-dotenv = "^1.0.0"
+pytz = "^2023.3"
+marshmallow = "^3.19.0"
+flask-jwt-extended = "^4.4.4"
+structlog = "^23.1.0"
+flask-apispec = "^0.11.4"
+flask-sqlalchemy = "^3.0.3"
+alembic = "^1.11.1"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
+pytest-runner = "^6.0.0"
+factory-boy = "^3.2.1"
+snapshottest = "^0.6.0"
+coverage-badge = "^1.1.0"
+
+[tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.13"
+isort = "^5.12.0"
+flask-shell-ipython = "^0.5.1"
+pylint = "^2.17.4"
+
+[tool.poetry.group.prod.dependencies]
+gunicorn = "^20.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
