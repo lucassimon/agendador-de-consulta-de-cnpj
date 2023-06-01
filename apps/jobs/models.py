@@ -1,19 +1,33 @@
-from apps.extensions import db
+from enum import StrEnum
+from apps.extensions.db import db
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.sql import func
+
+class JobStatusEnum(StrEnum):
+    created = 'created'
+    processed = 'processed'
+    error = 'error'
+    processing = 'processing'
 
 
-class Result(db.Model):
-    __tablename__ = 'results'
+class Job(db.Model):
+    __tablename__ = 'jobs'
 
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String())
-    result_all = db.Column(JSON)
-    result_no_stop_words = db.Column(JSON)
+    title = db.Column(db.String(), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    cpf_cnpj = db.Column(db.String(), nullable=False)
+    status = db.Column(db.Enum(JobStatusEnum), default=JobStatusEnum.created)
+    # low priority with rabbitmq
+    priority = db.Column(db.Integer, default=0)
+    duration = db.Column(db.Integer, default=0)
+    date = db.Column(db.DateTime(timezone=True), nullable=False)
+    creator_id = db.Column(db.String(), nullable=False)
+    creator_email = db.Column(db.String(), nullable=False)
+    created = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
-    def __init__(self, url, result_all, result_no_stop_words):
-        self.url = url
-        self.result_all = result_all
-        self.result_no_stop_words = result_no_stop_words
 
-    def __repr__(self):
-        return '<id {}>'.format(self.id)
+    def to_dict(self):
+        return self._asdict()
+        # return {field.name:getattr(self, field.name) for field in self.__table__.c}

@@ -2,7 +2,6 @@ import os
 
 from flask import Flask
 
-
 # from datetime import datetime
 # from datetime import timedelta
 # from datetime import timezone
@@ -12,9 +11,10 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 # Realize a importação da função que configura a api
 from apps.extensions.api import configure_api
 from apps.extensions.config import config
-from apps.extensions.db import db
+from apps.extensions.db import db, migrate, createdb
 from apps.extensions.jwt import configure_jwt
 
+# db = SQLAlchemy()
 
 def create_app(testing=False):
     app = Flask('agendador-de-consultas-de-cnpj')
@@ -38,15 +38,17 @@ def create_app(testing=False):
         'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'  # URI to access UI of API Doc
     })
 
-    # Configure MongoEngine
+    # Configure databases
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Configure JWT
     configure_jwt(app)
 
-    # executa a chamada da função de configuração
+    # configura rotas da api
     configure_api(app)
 
-    return app
+    # add command function to cli commands
+    app.cli.add_command(createdb)
 
-# app = create_app()
+    return app
