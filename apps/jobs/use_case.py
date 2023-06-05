@@ -119,12 +119,16 @@ class CreateJobUseCase:
             if self.rabbitmq_conn is None or self.rabbitmq_channel is None:
                 # trying to connect again
                 self.create_queue_connection('rabbitmq')
+                if self.logger:
+                    self.logger.info("create.job.usecase", message="Connect to queue again")
 
             prepare_to_send = PublishCreateJobToRabbit(
                 self.rabbitmq_conn,
                 self.rabbitmq_channel
             )
             prepare_to_send.run(model)
+            if self.logger:
+                self.logger.info("create.job.usecase", message="Message published")
 
         except Exception as exc:
             prepare_to_send = PublishErrorsInCreateJobUseCaseToRabbit(

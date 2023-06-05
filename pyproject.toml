@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Lucas <lucassrod@gmail.com>"]
 readme = "README.md"
-packages = [{include = "agendador_de_consulta_de_cnpj"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -20,7 +20,7 @@ alchemical = "0.6.0"
 alembic = "^1.11.1"
 sqlalchemy = "2.0.3"
 flask-migrate = "^4.0.4"
-psycopg2 = "^2.9.6"
+psycopg2-binary = "^2.9.6"
 pika = "^1.3.2"
 
 

@@ -11,7 +11,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 # Realize a importação da função que configura a api
 from apps.extensions.api import configure_api
 from apps.extensions.config import config
-from apps.extensions.db import db, migrate, createdb
+from apps.extensions.db import db, migrate, createqueue
 from apps.extensions.jwt import configure_jwt
 
 # db = SQLAlchemy()
@@ -49,6 +49,6 @@ def create_app(testing=False):
     configure_api(app)
 
     # add command function to cli commands
-    app.cli.add_command(createdb)
+    app.cli.add_command(createqueue)
 
     return app
