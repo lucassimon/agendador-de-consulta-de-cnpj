@@ -1,5 +1,5 @@
 from marshmallow import Schema, pre_load, post_load, validates, validates_schema, ValidationError
-from marshmallow.fields import Str, Int, DateTime
+from marshmallow.fields import Str, Int, DateTime, List, Nested, Boolean
 
 from apps.extensions.messages import MSG_FIELD_REQUIRED
 
@@ -58,3 +58,14 @@ class JobSchema(Schema):
 
 class CreateJobOutput(JobSchema):
     pass
+
+
+class PaginationJobsOutput(Schema):
+    page = Int(required=True)
+    per_page = Int(required=True)
+    total = Int(required=True)
+    items = List(Nested(JobSchema(many=True)), sourceKey='items')
+    has_next = Boolean(required=True)
+    has_prev = Boolean(required=True)
+    next_num = Int(required=True)
+    prev_num = Int(required=True)

@@ -2,7 +2,7 @@ from enum import StrEnum
 from apps.extensions.db import db
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
-
+from apps.results.models import Result
 class JobStatusEnum(StrEnum):
     created = 'created'
     processed = 'processed'
@@ -11,7 +11,7 @@ class JobStatusEnum(StrEnum):
 
 
 class Job(db.Model):
-    __tablename__ = 'jobs'
+    __tablename__ = 'job'
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(), nullable=False)
@@ -27,6 +27,7 @@ class Job(db.Model):
     created = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
+    results = db.relationship(Result, back_populates="job")
 
     def to_dict(self):
         return self._asdict()

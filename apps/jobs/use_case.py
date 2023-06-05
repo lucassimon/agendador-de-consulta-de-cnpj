@@ -4,9 +4,10 @@ from flask import current_app
 from marshmallow import ValidationError
 
 from .repositories import JobsSQLAlchemyRepository
-from .schemas import CreateJobOutput
+from .schemas import CreateJobOutput, PaginationJobsOutput, JobSchema
 from .utils import RabbitMQ
 from .infra import PublishCreateJobToRabbit, PublishErrorsInCreateJobUseCaseToRabbit, PublishCreateJobToSQS
+
 
 class CreateJobUseCase:
     """
@@ -41,8 +42,6 @@ class CreateJobUseCase:
         if use_queue == 'rabbitmq':
             try:
                 uri = current_app.config['RABBITMQ_CONNECTION']
-                import ipdb
-                ipdb.set_trace()
                 self.rabbitmq_conn, self.rabbitmq_channel = RabbitMQ.connect(uri=uri)
 
             except Exception as err:
@@ -134,8 +133,7 @@ class CreateJobUseCase:
                 routing_key='queue',
                 queue='queue_error',
             )
-            import ipdb
-            ipdb.set_trace()
+
             prepare_to_send.run(model)
 
             raise exc
@@ -160,16 +158,113 @@ class CreateJobUseCase:
         return data
 
     def execute(self, schema_input, input_params, kwargs):
-        import ipdb
-        ipdb.set_trace()
         data = self.validate(schema_input=schema_input, input_params=input_params)
-        ipdb.set_trace()
         data = self.update_payload_with_user_data(data=data, user_id=kwargs['user_id'], user_email=kwargs['user_email'])
-        ipdb.set_trace()
         model = self.save(data=data)
-        ipdb.set_trace()
         output = self.__to_output(job=model)
         self.send_user_to_queue(model=output, use_queue=kwargs['use_queue'])
-        ipdb.set_trace()
+
+        self.repo.close()
+        return output
+
+
+class GetJobsPaginatedUseCase:
+    """
+    Classe para buscar os jobs por usuário
+    """
+
+    def __init__(self, repo: JobsSQLAlchemyRepository, logger: Logger | None = None) -> None:
+        self.repo = repo
+        self.logger = logger
+
+    def __to_output(self, pagination):
+        # Realizo um dump dos dados de acordo com o modelo salvo
+        job_schema = JobSchema(many=True)
+        jobs = job_schema.dump(pagination.items)
+
+        result = {
+            "items": jobs,
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev,
+            "next_num": pagination.next_num,
+            "prev_num": pagination.prev_num,
+        }
+
+        if self.logger:
+            self.logger.info("get_jobs_paginated.job.usecase", message="Render job output")
+
+        return result
+
+    def fetch(self, *_, **kwargs):
+        try:
+            creator = kwargs['creator_id']
+            page = kwargs['page']
+            per_page = kwargs['per_page']
+            pagination = self.repo.get_jobs_paginated_by_user(
+                creator_id=creator, page_id=page, page_size=per_page
+            )
+
+            if self.logger:
+                self.logger.info("get_jobs_paginated.job.usecase", message="Jobs fetched")
+
+            return pagination
+
+        except Exception as err:
+            if self.logger:
+                self.logger.info("get_jobs_paginated.job.usecase", message="Jobs pagination not fetched. Strange error")
+
+            raise err
+
+    def execute(self, **kwargs):
+        pagination = self.fetch(**kwargs)
+        output = self.__to_output(pagination=pagination)
+        self.repo.close()
+        return output
+
+
+
+class GetJobUseCase:
+    """
+    Classe para buscar um job por usuário
+    """
+
+    def __init__(self, repo: JobsSQLAlchemyRepository, logger: Logger | None = None) -> None:
+        self.repo = repo
+        self.logger = logger
+
+    def __to_output(self, model):
+        # Realizo um dump dos dados de acordo com o modelo salvo
+        job_schema = JobSchema()
+        result = job_schema.dump(model)
+
+        if self.logger:
+            self.logger.info("get_job.job.usecase", message="Render job output")
+
+        return result
+
+    def get(self, *_, **kwargs):
+        try:
+            creator = kwargs['creator_id']
+            job = kwargs['job_id']
+
+            model = self.repo.get_job_by_id(creator_id=creator, job_id=job)
+
+            if self.logger:
+                self.logger.info("get_job.job.usecase", message="Jobs fetched")
+
+            return model
+
+        except Exception as err:
+            if self.logger:
+                self.logger.info("get_job.job.usecase", message="Get Job. Strange error")
+
+            raise err
+
+    def execute(self, **kwargs):
+        model = self.get(**kwargs)
+        output = self.__to_output(model=model)
         self.repo.close()
         return output

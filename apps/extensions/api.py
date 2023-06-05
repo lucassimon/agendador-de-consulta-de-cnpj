@@ -6,7 +6,8 @@ from flask_restful import Api, Resource
 from flask_apispec import marshal_with
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, doc, use_kwargs
-from apps.jobs.resources import CreateJobResource
+from apps.jobs.resources import JobsResource, JobResource
+from apps.results.resources import ResultsResource
 
 # Criamos uma classe que extende de Resource
 class Index(MethodResource, Resource):
@@ -29,7 +30,9 @@ api = Api()
 def configure_api(app):
 
     api.add_resource(Index, '/')
-    api.add_resource(CreateJobResource, '/jobs')
+    api.add_resource(JobsResource, '/jobs')
+    api.add_resource(JobResource, '/job/<string:job_id>')
+    api.add_resource(ResultsResource, '/results')
 
     # rotas para jobs
 
@@ -38,4 +41,5 @@ def configure_api(app):
 
     docs = FlaskApiSpec(app)
     docs.register(Index)
-    docs.register(CreateJobResource)
+    docs.register(JobsResource)
+    docs.register(ResultsResource)

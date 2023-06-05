@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        'jobs',
+        'job',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('title', sa.String, nullable=False),
         sa.Column('description', sa.Text, nullable=False),
@@ -36,4 +36,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('jobs')
+    op.drop_table('job')
