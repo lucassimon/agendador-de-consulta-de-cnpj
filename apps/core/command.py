@@ -1,19 +1,19 @@
 import click
 from flask import current_app
 from flask.cli import with_appcontext
-from jobs.utils import RabbitMQ
 
 
 @click.command(name='createqueue')
 @with_appcontext
 def createqueue():
+    from apps.jobs.utils import RabbitMQ
     uri = current_app.config['RABBITMQ_CONNECTION']
     connect, channel = RabbitMQ.connect(uri=uri)
 
     # create exchanges
-    channel.exchange_declare(exchange="create-job-use-case", type='direct')
-    channel.exchange_declare(exchange="create-job-use-case-dlq", type='direct')
-    channel.exchange_declare(exchange="errors-when-create-job-use-case", type='direct')
+    channel.exchange_declare(exchange="create-job-use-case", exchange_type='direct', durable=True)
+    channel.exchange_declare(exchange="create-job-use-case-dlq", exchange_type='direct', durable=True)
+    channel.exchange_declare(exchange="errors-when-create-job-use-case", exchange_type='direct', durable=True)
 
     # create job_created_dlq
     channel.queue_declare(queue='job_created_dlq', durable=True)

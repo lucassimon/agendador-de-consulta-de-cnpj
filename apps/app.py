@@ -11,7 +11,8 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 # Realize a importação da função que configura a api
 from apps.extensions.api import configure_api
 from apps.extensions.config import config
-from apps.extensions.db import db, migrate, createqueue
+from apps.extensions.db import db, migrate
+from apps.core.command import createqueue
 from apps.extensions.jwt import configure_jwt
 
 # db = SQLAlchemy()
